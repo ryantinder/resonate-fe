@@ -1,4 +1,5 @@
 import axios from "axios"
+import type { Game } from "./interface"
 export const fetchGames = async () : Promise<Game[]> => {
     console.log("fetching games")
     const res_url = 'https://v1.american-football.api-sports.io/games?season=2023&league=1'

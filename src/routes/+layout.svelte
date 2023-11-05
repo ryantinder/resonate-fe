@@ -3,6 +3,8 @@
     
 </script>
 
-<title>basedtrade.io</title>
+<title>ChainBet</title>
 
 <slot />
+<div class="h-[200px]">&nbsp;</div>
+

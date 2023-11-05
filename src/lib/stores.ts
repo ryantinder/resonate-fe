@@ -1,29 +1,23 @@
 import { writable } from "svelte/store";
 import { type PublicClient, createPublicClient, webSocket, http } from "viem";
 import { mainnet } from "viem/chains";
+import type { Game } from "./interface";
+import type { GetWalletClientResult } from "@wagmi/core";
 
 export const sectionIndex = writable(0);
 
 export const games = writable<Game[]>([]);
-
-export const alchemyClient = writable<PublicClient>(
+export const walletClient = writable<GetWalletClientResult>(undefined);
+export const sepoliaClient = writable<PublicClient>(
     createPublicClient({
         transport: webSocket('wss://eth-sepolia.g.alchemy.com/v2/yTwOfGQDI2ZUToBzyqDMmJAtL-H0YP9E'),
         chain: mainnet
     })
 )
-export const baseClient = writable<PublicClient>(
+
+export const fujiClient = writable<PublicClient>(
     createPublicClient({
-        transport: http('https://rpc.ankr.com/base/641846b46ef7d4319ba8b43509ecb8f9d4399745f60f0d0d573a6d0db5efb337'),
-        chain: {
-            id: 8453, 
-            name: "Base", 
-            nativeCurrency: { name: 'Base ETH', symbol: 'ETH (Base)', decimals: 18},
-            network: "Base",
-            rpcUrls: {
-                default: { http: ['https://rpc.ankr.com/base/641846b46ef7d4319ba8b43509ecb8f9d4399745f60f0d0d573a6d0db5efb337'] },
-                public: { http: ['https://rpc.ankr.com/base/641846b46ef7d4319ba8b43509ecb8f9d4399745f60f0d0d573a6d0db5efb337'] },
-            }
-        }
+        transport: webSocket('wss://api.avax-test.network/ext/bc/C/ws'),
+        chain: mainnet
     })
 )

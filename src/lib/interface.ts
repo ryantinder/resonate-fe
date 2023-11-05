@@ -1,3 +1,5 @@
+import type { Address } from "viem"
+
 /*
        "game": {
             "id": 7670,
@@ -61,7 +63,7 @@
             }
         }
 */
-interface Game {
+export interface Game {
     game: {
         id: number,
         stage: string,
@@ -123,4 +125,18 @@ interface Game {
             total: number | null
         }
     }
+}
+
+export interface BetInfo {
+    wager: bigint,
+    matchId: number,
+    margin: number,
+    winner: boolean,
+    cover: boolean,
+    finished: boolean
+}
+export interface BetState extends BetInfo {
+    coverAddr: Address,
+    atsAddr: Address,
+    contractAddr: Address,
 }
