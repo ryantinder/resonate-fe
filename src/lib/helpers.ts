@@ -20,11 +20,11 @@ export const ONE = BigInt(1)
 export const ONE_MASK = ~(maxUint256 << ONE)
 
 export const MOCK20 = "0xB97183D2e5FA8954dcf7fbf16FC065d343278593"
-export const SEP_FACTORY_ADDRESS = "0x064AA994e3D69c9d5531BcA7502E2F35df09EB25"
-export const SEP_DEPLOY_BLOCK = 4623428
+export const SEP_FACTORY_ADDRESS = "0x038DBF7D4a81F904C91c6c7a8FC05c8bC0DFd6a2"
+export const SEP_DEPLOY_BLOCK = 4638682
 
-export const FUJI_FACTORY_ADDRESS = "0x451ee42a0FF7b4b706D2A3665c1F8327744c6f40"
-export const FUJI_DEPLOY_BLOCK = 27440179
+export const FUJI_FACTORY_ADDRESS = "0x383179f368e86eab1ADA5E31869cc5168FD4AF26"
+export const FUJI_DEPLOY_BLOCK = 27452541
 export const parseBetInfo = (betInfo: bigint) : BetInfo => {
     /*
     wager = betInfo >> 128;

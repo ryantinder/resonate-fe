@@ -23,7 +23,7 @@ export const FUJI_FACTORY = getContract({
 })
 
 export const SEP_TOKEN = getContract({
-    address: MOCK20,
+    address: "0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05",
     abi: erc20ABI
 })
 export const FUJI_TOKEN = getContract({

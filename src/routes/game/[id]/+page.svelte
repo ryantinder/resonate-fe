@@ -1,10 +1,9 @@
 <script lang="ts">
-    import { sectionIndex, games, sepoliaClient, fujiClient, walletClient } from "$lib/stores";
+    import { sectionIndex, games, sepoliaClient, fujiClient, walletClient, bets } from "$lib/stores";
 	import { onDestroy, onMount } from "svelte";
 	import { avalancheFuji, mainnet, sepolia } from "viem/chains";
-    import { createConfig, configureChains, getAccount, connect, watchAccount, getPublicClient, getWalletClient, type GetWalletClientResult, erc20ABI, watchNetwork } from "@wagmi/core"
+    import { createConfig, configureChains, getAccount, connect, watchAccount, getPublicClient, getWalletClient, type GetWalletClientResult, erc20ABI, watchNetwork, type GetPublicClientResult, type PublicClient } from "@wagmi/core"
     import { EthereumClient, w3mConnectors, w3mProvider } from "@web3modal/ethereum"
-    import { Web3Modal } from "@web3modal/html"
 	import { getEnsName } from "viem/ens";
 	import { B128, B29, B30, B31, B32, B64, MOCK20, ONE, ONE_MASK, truncateAddress, parseBetInfo, SEP_FACTORY_ADDRESS, FUJI_FACTORY_ADDRESS, SEP_DEPLOY_BLOCK, FUJI_DEPLOY_BLOCK } from "$lib/helpers";
 	import { goto } from "$app/navigation";
@@ -22,145 +21,19 @@
     $: winner = 0
     $: wager = 0
     $: margin = 0.5
-    $: activeWeek = 9;
-    let textColor = "text-blue-800" 
-    let changedTheme = false;
-    $: if ($sectionIndex == 2) {
-        textColor = "text-[#3be5f7]"
-        changedTheme = true;
-    }
-
-    $: issepolia = true;
-    const chains = [sepolia, avalancheFuji]
-    const projectId = '7a27253eb43a160e20a5c5130cda68fe'
-    const { publicClient } = configureChains(
-        chains,
-        [w3mProvider({ projectId})]
-    )
-
-    const config = createConfig({
-        autoConnect: true,
-        connectors: w3mConnectors({ 
-            projectId,
-            chains: chains
-        }),
-        publicClient
-    })
-    const ethereumClient = new EthereumClient(config, chains)
-
-    $: bets = getBetsCreated();
-    $: showDeposit = true;
-    $: didDeposit = false;
     $: account = getAccount()
     $: ensName = "";
-    $: mainnet_block_number = 0n;
-    $: mainnet_balance = 0n;
-    $: base_block_number = 0n;
-    $: base_balance = 0n;
 
 
-    const unwatchSepBets = $sepoliaClient.watchEvent({  
-        address: SEP_FACTORY_ADDRESS,
-        event: parseAbiItem('event BetCreated(address indexed creator, uint indexed matchId, address indexed bet)'),
-        args: {
-            matchId: BigInt($page.params.id)
-        },
-        onLogs: logs => {
-            console.log(logs)
-            bets = getBetsCreated() 
-        }
-    })
-    const unwatchFujiBets = $fujiClient.watchEvent({  
-        address: FUJI_FACTORY_ADDRESS,
-        event: parseAbiItem('event BetCreated(address indexed creator, uint indexed matchId, address indexed bet)'),
-        args: {
-            matchId: BigInt($page.params.id)
-        },
-        onLogs: logs => {
-            console.log(logs)
-            bets = getBetsCreated() 
-        }
-    })
-    const unwatchNetwork = watchNetwork(async (network) => {
-        console.log("HERE", network.chain?.id)
-        console.log("setting wallet", network.chain?.id)
-        $walletClient = await getWalletClient({chainId: network.chain?.id})
-    })
     const unwatchAcct = watchAccount(async (acct) => {
         account = acct
         if (account.address) {
             console.log(account)
         } else {
-            mainnet_balance = 0n
-            base_balance = 0n
             ensName = ''
         }
-        // $walletClient = await getWalletClient({chainId: sepolia.id})
-        // outside of branch to force wallet disconnect
-        // const sep_wallet = await getWalletClient({chainId: sepolia.id})
-        //     .then( (wc) => {
-        //         console.log(wc)
-        //         walletClient = wc 
-        //     })
-        // const fuji_wallet = await getWalletClient({chainId: avalancheFuji.id})
-        //     .then( (wc) => {
-        //         console.log(wc)
-        //         walletClient = wc 
-        //     })
     })
 
-    const getBetsCreated = async () : Promise<BetState[]> => {
-        if (!$fujiClient && !$sepoliaClient) return [];
-        const [sep_logs, fuji_logs] = await Promise.all([
-            $sepoliaClient.getLogs({  
-                address: SEP_FACTORY_ADDRESS,
-                event: parseAbiItem('event BetCreated(address indexed creator, uint indexed matchId, address indexed bet)'),
-                fromBlock: BigInt(SEP_DEPLOY_BLOCK)
-            }),
-            $fujiClient.getLogs({  
-                address: FUJI_FACTORY_ADDRESS,
-                event: parseAbiItem('event BetCreated(address indexed creator, uint indexed matchId, address indexed bet)'),
-                fromBlock: BigInt(FUJI_DEPLOY_BLOCK)
-            })
-        ])
-        // multicall all bet addresses then return the active ones, non-started ones
-        const [sep_states, fuji_states] = await Promise.all([
-            $sepoliaClient.multicall({
-                contracts: [
-                    ...sep_logs.map( (log) => { return { ...bet_template, address: log.args.bet!, functionName: 'betInfo'}}),
-                    ...sep_logs.map( (log) => { return { ...bet_template, address: log.args.bet!, functionName: 'cover'}}),
-                    ...sep_logs.map( (log) => { return { ...bet_template, address: log.args.bet!, functionName: 'ats'}})
-                ]
-            }),
-            $fujiClient.multicall({
-                contracts: [
-                    ...fuji_logs.map( (log) => { return { ...bet_template, address: log.args.bet!, functionName: 'betInfo'}}),
-                    ...fuji_logs.map( (log) => { return { ...bet_template, address: log.args.bet!, functionName: 'cover'}}),
-                    ...fuji_logs.map( (log) => { return { ...bet_template, address: log.args.bet!, functionName: 'ats'}})
-                ]
-            })
-        ])
-        return [
-            ...sep_logs.map( (log, i) : BetState => {
-                return {
-                    ...parseBetInfo(sep_states[i].result as bigint),
-                    coverAddr: sep_states[sep_logs.length + i].result as `0x${string}`,
-                    atsAddr: sep_states[sep_logs.length * 2 + i].result as `0x${string}`,
-                    contractAddr: log.args.bet!
-                }
-            }),
-            ...fuji_logs.map( (log, i) : BetState => {
-                return {
-                    ...parseBetInfo(fuji_states[i].result as bigint),
-                    coverAddr: fuji_states[fuji_logs.length + i].result as `0x${string}`,
-                    atsAddr: fuji_states[fuji_logs.length * 2 + i].result as `0x${string}`,
-                    contractAddr: log.args.bet!
-                }
-            })
-        ]
-    }
-
-    let web3modal: Web3Modal | undefined = undefined;
     let isMobile = false;
     
     let errorMessage = writable<string>('');
@@ -202,7 +75,6 @@
                                                 
             factory.write.createBet([matchId, wagerAmount, marginAmount, cover, winner])
             .then(( hash ) => {
-                didDeposit = true
                 txHash = hash
             })
             .catch((reason) => {
@@ -249,8 +121,10 @@
             if (allowance <= parseUnits(bet.wager.toString(), 6)) {
                 await token.write.approve([bet.contractAddr, maxUint256])
             } else {
-                console.log("already approved")
+                console.log("already approved", allowance)
             }
+            const balance = await token.read.balanceOf([client.account.address])
+            console.log(balance)
             const write_bet = getContract({
                 address: bet.contractAddr,
                 abi: BET_ABI,
@@ -263,34 +137,17 @@
     }
     onMount(async () => {
         isMobile = window.innerWidth < 768;
-        web3modal = new Web3Modal(
-            { projectId },
-            ethereumClient    
-        )
-        console.log("THERE")
+
         $walletClient = await getWalletClient({chainId: sepolia.id})
         isMobile = window.innerWidth < 768;
-        console.log($games)
         const _games = $games.length != 0 ? $games : await fetchGames();
         game = _games.find((x) => x.game.id.toString() == $page.params.id)!
     })
     onDestroy(() => {
         unwatchAcct()
-        unwatchFujiBets()
-        unwatchSepBets()
-        unwatchNetwork()
     })
 
-    const switchChain = async (sep: boolean) => {
-        console.log($walletClient)
-        if (!$walletClient) return;
-        if (sep) {
-            await $walletClient?.switchChain({ id: sepolia.id} )
-        } else {
-            await $walletClient?.switchChain({ id: avalancheFuji.id} )
-        }
-        $walletClient = $walletClient
-    }
+
 </script>
 
 <!-- <Header /> -->
@@ -301,28 +158,7 @@
             href="/">
             Back
         </a>
-        {#if web3modal}
-            <div class="text-xl font-mont font-bold items-center flex gap-2 text-primary">
-                <div>Chain:</div>
-                <button on:click={() => { switchChain(true)}} class="p-2 px-3 bg-white outline outline-2 --outline-offset-2 outline-primary hover:outline-0 hover:bg-primary hover:text-white rounded-md text-primary font-bold font-mont" 
-                >
-                Sepolia
-            </button>        
-                <button on:click={() => { switchChain(false) }} class="p-2 px-3 bg-white outline outline-2 --outline-offset-2 outline-primary hover:outline-0 hover:bg-primary hover:text-white rounded-md text-primary font-bold font-mont" 
-                >
-                Fuji
-            </button>
-            </div>
-            <button class="p-2 px-3 bg-white outline outline-2 --outline-offset-2 outline-primary hover:outline-0 hover:bg-primary hover:text-white rounded-md text-primary font-bold font-mont" 
-            on:click={ web3modal.openModal }>
-                {#if account.address}
-                    {!ensName || ensName == "" ? truncateAddress(account.address) ?? "Unknown" : ensName}
-                {:else}
-                    Connect Wallet
-                {/if}
-            </button>
-        {/if}
-        </span>
+    </span>
     {#if game}
     <div class="w-full py-6 px-16 flex gap-2 justify-center items-center bg-primary">
         <div class="text-3xl font-bold text-white text-center ">{game.teams.home.name}</div>
@@ -385,11 +221,8 @@
     </div>
     <div class="text-3xl font-bold">
         <div class="border-b mb-2">Available Bets</div>
-        {#await bets}
-            <div class="text-2xl font-semibold">Loading...</div>
-        {:then _bets}
         <div class="flex flex-col gap-2">
-            {#each _bets as bet}
+            {#each $bets as bet}
                 <!-- OPEN BETS -->
                 {#if (bet.coverAddr == zeroAddress || bet.atsAddr == zeroAddress) && !bet.finished }
                     <div class={`flex font-semibold text-base py-2 px-4 border justify-between items-center`}>
@@ -398,13 +231,14 @@
                             <div class="w-2/3">Bet that the { bet.winner ? game.teams.away.name : game.teams.home.name } win by { Math.floor(bet.margin / 10 + 1)} points or more.</div>
                         {:else}
                         <!-- ATS side available -->
-                            <div class="w-2/3">Bet that the { bet.winner ? game.teams.home.name : game.teams.away.name } win AT ALL {bet.margin / 10 > 1 ? `, or lose by ${Math.ceil(bet.margin / 10 - 1)} points or less.` : ""}</div>
+                            <div class="w-[60%]">Bet that the { bet.winner ? game.teams.home.name : game.teams.away.name } win AT ALL {bet.margin / 10 > 1 ? `, or lose by ${Math.ceil(bet.margin / 10 - 1)} points or less.` : ""}</div>
                         {/if}
-                        <div class="flex w-1/3 justify-end items-center gap-4">
+                        <div class="flex w-[40%] justify-end items-center gap-4">
                             <div class="font-bold text-3xl">${formatUnits(bet.wager, 6)}</div>
                             {#if bet.coverAddr == account.address || bet.atsAddr == account.address}
                                 My bet
                             {:else}
+                                {bet.chainId == 11155111 ? "Sepolia" : "Fuji"}
                                 <button on:click={() => {handleTakeBet($walletClient, bet)}} class="py-2 px-4 outline outline-1 bg-white hover:bg-gray rounded-md">Accept</button>
                             {/if}
                         </div>
@@ -416,17 +250,11 @@
             </div>
             {/each}
         </div>
-        {:catch error}
-            <div class="text-red-500">{error.message}</div>
-        {/await}
     </div>
     <div class="text-3xl font-bold">
         <div class="border-b mb-2">Bets in play</div>
-        {#await bets}
-            <div class="text-2xl font-semibold">Loading...</div>
-        {:then _bets}
         <div class="flex flex-col gap-2">
-            {#each _bets as bet}
+            {#each $bets as bet}
                 <!-- OPEN BETS -->
                 {#if bet.coverAddr != zeroAddress && bet.atsAddr != zeroAddress}
                 <div class="flex font-semibold  py-2 px-4 border justify-between items-center">
@@ -445,9 +273,6 @@
                 </div>
             {/each}
         </div>
-        {:catch error}
-            <div class="text-red-500">{error.message}</div>
-        {/await}
     </div>
     {/if}
 </main>

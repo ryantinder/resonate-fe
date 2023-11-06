@@ -139,4 +139,5 @@ export interface BetState extends BetInfo {
     coverAddr: Address,
     atsAddr: Address,
     contractAddr: Address,
+    chainId: number
 }
