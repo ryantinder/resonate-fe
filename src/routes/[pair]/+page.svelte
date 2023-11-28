@@ -59,7 +59,7 @@
                 </div>
             {:else}
                 <div class="w-1/4">
-                    <a href={`/${swap.from}`}>🔎</a>
+                    <a data-sveltekit-preload-data="hover" href={`/${swap.from}`}>🔎</a>
                     <input
                         id="address"
                         class={`w-3/4 outline-none ${highlighted == swap.from ? 'bg-yellow-500 bg-opacity-20' : 'bg-transparent'} `}

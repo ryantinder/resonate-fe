@@ -31,11 +31,9 @@
     </div>
     {#each data.pairs.sort( (a, b) => b.cumulativeVolumeUSD - a.cumulativeVolumeUSD) as _pair}
         {#if !pair || _pair.id.includes(pair) || (_pair.name.includes(pair))}
-            <button 
-                on:click={() => {
-                    console.log(_pair)
-                    goto('/' + _pair.id)
-                }} 
+            <a 
+                data-sveltekit-preload-data="hover"
+                href="/{_pair.id}"
                 class="py-2 text-left flex w-full hover:bg-white hover:bg-opacity-10 font-semibold hover:cursor-pointer"
             >
             <div class="w-1/3">
@@ -50,7 +48,7 @@
             <div class="w-1/6">
                 ${_pair.totalValueLockedUSD.toLocaleString('en-US')}
             </div>
-            </button>
+        </a>
         {/if}
     {/each}
 </main>
