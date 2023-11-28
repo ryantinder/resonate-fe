@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { getContract } from "viem";
-	import { bet_template } from "$lib/contract";
 
     export let data;
 

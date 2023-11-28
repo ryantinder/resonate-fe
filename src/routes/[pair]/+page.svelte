@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { fixDecimalPlaces, fixTimestamp, getAlias } from '$lib/helpers.js';
+	import { fixDecimalPlaces, fixTimestamp } from '$lib/helpers.js';
 	import { aliases } from '$lib/stores.js';
-	import { stringify } from 'postcss';
-	import { formatUnits, parseUnits } from 'viem';
+	import { formatUnits } from 'viem';
 
     export let data;
     $: highlighted = ''

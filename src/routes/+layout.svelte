@@ -18,7 +18,7 @@
 
 <title>Uni-Vestigator</title>
 <div class="px-20 bg-dark text-white min-h-screen">
-    <div on:click={() => {goto('/')}} class="py-8 text-5xl font-bold">
+    <div on:click={() => {goto('/')}} class="hover:cursor-pointer py-8 text-5xl font-bold">
         Uni-vestigator
     </div>
     <slot />

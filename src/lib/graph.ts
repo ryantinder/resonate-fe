@@ -1,5 +1,5 @@
 import { AllPairsQuery, PairHistoryQuery, PairQuery, UserHistoryQuery } from "./gql";
-import type { AllPairsQueryResponse, Pair, PairHistoryResponse, Swap } from "./interface";
+import type { Pair, PairHistoryResponse, Swap } from "./interface";
 import axios from "axios";
 export let API_URL = 'https://gateway.thegraph.com/api/1e57515ca68dc280a6365c3de5298d70/subgraphs/id/ELUcwgpm14LKPLrBRuVvPvNKHQ9HvwmtKgKSH6123cr7'
 
