@@ -20,6 +20,7 @@ export const AllPairsQuery =
                     id
                     name
                     decimals
+                    symbol
                 }
           }
         }
@@ -39,6 +40,7 @@ export const PairQuery = (pair: string) : string => {
                 id
                 name
                 decimals
+                symbol
             }
         }
     }`,
@@ -66,6 +68,7 @@ export const PairHistoryQuery = (pair: string) : string => {
                     id
                     name
                     decimals
+                    symbol
                 }
             }
             timestamp
@@ -76,11 +79,13 @@ export const PairHistoryQuery = (pair: string) : string => {
                 id
                 name
                 decimals
+                symbol
             }
             tokenOut {
                 id
                 name
                 decimals
+                symbol
             }
         }
     }`,
@@ -108,6 +113,7 @@ export const UserHistoryQuery = (user: string) : string => {
                     id
                     name
                     decimals
+                    symbol
                 }
             }
             timestamp
@@ -118,11 +124,13 @@ export const UserHistoryQuery = (user: string) : string => {
                 id
                 name
                 decimals
+                symbol
             }
             tokenOut {
                 id
                 name
                 decimals
+                symbol
             }
         }
     }`,

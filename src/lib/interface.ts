@@ -20,6 +20,7 @@ export interface Token {
     id: string;
     name: string;
     decimals: number
+    symbol: string
 }
 
 export interface PairHistoryResponse {

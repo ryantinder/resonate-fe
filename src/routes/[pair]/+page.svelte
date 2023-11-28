@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { fixDecimalPlaces, fixTimestamp } from '$lib/helpers.js';
 	import { aliases } from '$lib/stores.js';
+	import { onMount } from 'svelte';
 	import { formatUnits } from 'viem';
 
     export let data;
@@ -9,8 +10,25 @@
     console.log(data)
     $: isUser = data.swaps.length == 0
     $: swaps = isUser ? data.user : data.swaps;
+    $: tvsymbol = `UNISWAP3ETH:${data.pair?.inputTokens[0].symbol}${data.pair?.inputTokens[1].symbol}`
+    onMount(() => {
+        new TradingView.widget(
+            {
+                "width": 980,
+                "height": 610,
+                "symbol": tvsymbol,
+                "interval": "D",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": false,
+                "container_id": "tradingview_def9f"
+            })
+    })
 </script>
-
 <!-- <Header /> -->
 
 <main class="flex font-mont flex-col justify-center gap-2 px-2 lg:px-0 text-clip">
@@ -21,6 +39,15 @@
             Address: {$page.params.pair}
         {/if}
     </div>
+    {#if !isUser}
+    <div class="w-full">
+    <div class="tradingview-widget-container">
+        <div id="tradingview_def9f"></div>
+        <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/symbols/{tvsymbol}/" rel="noopener" target="_blank"><span class="blue-text">Chart</span></a> by TradingView</div>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    </div>
+    </div>
+    {/if}
     <div class="w-full flex p-2">
         <div class="w-1/6">Time</div>
         <div class="w-1/12">Type</div>
