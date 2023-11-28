@@ -1,5 +1,6 @@
 import { maxUint256, maxUint32, maxUint64 } from "viem";
-import type { BetInfo } from "./interface";
+import { aliases } from "./stores";
+import { get } from "svelte/store";
 
 export const truncateAddress = (address: `0x${string}`) => {
     return address.slice(0, 6) + '...' + address.slice(address.length - 4);
@@ -25,21 +26,15 @@ export const SEP_DEPLOY_BLOCK = 4638682
 
 export const FUJI_FACTORY_ADDRESS = "0x383179f368e86eab1ADA5E31869cc5168FD4AF26"
 export const FUJI_DEPLOY_BLOCK = 27452541
-export const parseBetInfo = (betInfo: bigint) : BetInfo => {
-    /*
-    wager = betInfo >> 128;
-    match_id = (betInfo >> 64) & 0xffffffffffffffff;
-    margin = (betInfo >> 32) & 0xffffffff;
-    winner = (betInfo >> 31) & 1 == 1;
-    _cover = (betInfo >> 30) & 1 == 1;
-    finished = (betInfo >> 29) & 1 == 1;
-    */
-    return {
-        wager: betInfo >> B128,
-        matchId: parseInt(((betInfo >> B64) & maxUint64).toString()),
-        margin: parseInt(((betInfo >> B32) & maxUint32).toString()),
-        winner: ((betInfo >> B31) & ONE) == ONE,
-        cover: ((betInfo >> B30) & ONE) == ONE,
-        finished: ((betInfo >> B29) & ONE) == ONE,
-    }
+
+export function fixDecimalPlaces(str: string, decimals = 4): string {
+    return parseFloat(str).toLocaleString('fullwide', { maximumFractionDigits: decimals, notation: "compact", compactDisplay: "short" })
+  }
+
+export function fixTimestamp(str: string): string {
+    return new Date(parseInt(str) * 1000).toLocaleString()
+}
+
+export function getAlias(str: string) : string {
+    return get(aliases)[str] ?? str
 }

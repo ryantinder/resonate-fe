@@ -1,12 +1,13 @@
 import { fetchGames } from '$lib/api.js';
-import { games } from '$lib/stores.js';
+import { GetAllPairs } from '$lib/graph.js';
+import type { Pair } from '$lib/interface.js';
 import axios from 'axios';
 /** @type {import('./$types').PageServerLoad} */
-// export async function load({ params, fetch }) : Promise<{ games: Game[]}>{
-// 	return {
-// 		fetch: await fetchGames()
-// 	};
-// }
+export async function load({ params, fetch }) : Promise<{ pairs: Pair[]}>{
+	return {
+		pairs: await GetAllPairs()
+	};
+}
 
 /*
     game:
