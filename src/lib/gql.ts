@@ -7,9 +7,6 @@ export const AllPairsQuery =
         ) {
             pools(
                 first: 100
-                where: {
-                    cumulativeVolumeUSD_gt: 100
-                }
             ) {
                 id
                 name
