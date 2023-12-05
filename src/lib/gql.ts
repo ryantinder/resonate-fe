@@ -22,7 +22,7 @@ export const AllPairsQuery =
           }
         }
     }`,
-    variables: {}
+    variables: { }
 });
 export const PairQuery = (pair: string) : string => {
     return JSON.stringify({
